@@ -13,7 +13,7 @@ def caller_on_transit_lines(operator_id):
 
     if the_operators[operator_id] is not None:
         operator_id = the_operators[operator_id]
-        url = f"http://api.511.org/transit/lines?api_key=09ddeab2-9b3f-4531-8a35-5304443e02b4&operator_id={operator_id}"
+        url = f"http://api.511.org/transit/lines?api_key=[API_KEY]&operator_id={operator_id}"
         response = requests.get(url)
         response.encoding = 'utf-8-sig'
 
@@ -46,7 +46,7 @@ def get_departures(operator_id, station_id):
     if the_operators[operator_id] is None:
         return f"❌ Unknown operator: {operator_id}. Please try a different operator."
 
-    url = f"https://api.511.org/transit/StopMonitoring?api_key=09ddeab2-9b3f-4531-8a35-5304443e02b4&agency={the_operators[operator_id]}&stopcode={station_id}"
+    url = f"https://api.511.org/transit/StopMonitoring?api_key=[API_KEY]&agency={the_operators[operator_id]}&stopcode={station_id}"
     
     try:
         response = requests.get(url)
@@ -85,7 +85,7 @@ def caller_on_transit_alerts(operator_id):
 
     if the_operators[operator_id] is not None:
         operator_id = the_operators[operator_id]
-        url = f"https://api.511.org/transit/servicealerts?api_key=09ddeab2-9b3f-4531-8a35-5304443e02b4&agency={operator_id}&format=JSON"
+        url = f"https://api.511.org/transit/servicealerts?api_key=[API_KEY]&agency={operator_id}&format=JSON"
         response = requests.get(url)
         response.encoding = 'utf-8-sig'
 
@@ -103,7 +103,7 @@ def get_transit_alerts_from_operator(operator_id):
 
 def caller():
     all_of_the_lines = []
-    url = f"http://api.511.org/traffic/events?api_key=09ddeab2-9b3f-4531-8a35-5304443e02b4"
+    url = f"http://api.511.org/traffic/events?api_key=[API_KEY]"
     response = requests.get(url)
     response.encoding = 'utf-8-sig'
 

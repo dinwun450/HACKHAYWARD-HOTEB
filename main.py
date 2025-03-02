@@ -6,7 +6,7 @@ from groqify import get_departures, get_traffic_alerts, get_transit_alerts_from_
 import json
 
 # --- Directly set your Groq API key here ---
-GROQ_API_KEY = "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"
+GROQ_API_KEY = "[APIKEYHERE]"
 
 # --- Other static chatbot setup ---
 INITIAL_RESPONSE = "Hello! Ask me about public transit schedules and updates."

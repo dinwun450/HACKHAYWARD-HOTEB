@@ -118,3 +118,5 @@ def caller():
 
 def get_traffic_alerts():
     return caller()
+
+MODEL = 'llama3-70b-8192'

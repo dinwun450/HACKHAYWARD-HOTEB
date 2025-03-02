@@ -1,16 +1,15 @@
 import requests
 import json
 from groq import Groq
+import py_oldict
 
 def get_all_transit_operators():
-    the_operators = open("HackHaywardHackathon/the_bigoldict.json", "r")
-    the_operators = json.load(the_operators)
-    return the_operators
+    print("Get em!")
+    return py_oldict.all_of_em
 
 def caller_on_transit_lines(operator_id):
     all_of_the_lines = []
     the_operators = get_all_transit_operators()
-    print(the_operators)
 
     if the_operators[operator_id] is not None:
         operator_id = the_operators[operator_id]
@@ -119,145 +118,3 @@ def caller():
 
 def get_traffic_alerts():
     return caller()
-
-client = Groq(api_key="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")
-MODEL = 'llama3-70b-8192'
-
-def run_conversation(user_prompt):
-    messages=[
-        {
-            "role": "system",
-            "content": "You are a function calling LLM that uses the data extracted from the function and responds to "
-                       "the user with the result of the function."
-        },
-        {
-            "role": "user",
-            "content": user_prompt,
-        }
-    ]
-    tools = [
-        {
-            "type": "function",
-            "function": {
-                "name": "get_transit_lines_from_operator",
-                "description": "Get all transit lines from a specific transit operator",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "operator_id": {
-                            "type": "string",
-                            "description": "The name of the transit operator, in two-letter code format",
-                        }
-                    },
-                    "required": ["operator_id"],
-                },
-            },
-        },
-        {
-            "type": "function",
-            "function": {
-                "name": "get_departures",
-                "description": "Get upcoming departures from a specific station",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "operator_id": {
-                            "type": "string",
-                            "description": "The name of the transit operator, in two-letter code format",
-                        },
-                        "station_id": {
-                            "type": "string",
-                            "description": "The station ID of the station to get departures from",
-                        }
-                    },
-                    "required": ["operator_id", "station_id"],
-                },
-            }
-        },
-        {
-            "type": "function",
-            "function": {
-                "name": "get_transit_alerts_from_operator",
-                "description": "Get all transit alerts from a specific transit operator",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "operator_id": {
-                            "type": "string",
-                            "description": "The name of the transit operator, in two-letter code format",
-                        }
-                    },
-                    "required": ["operator_id"],
-                },
-            }
-        },
-        {
-            "type": "function",
-            "function": {
-                "name": "get_traffic_alerts",
-                "description": "Get all traffic alerts that are active.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {},
-                },
-            }
-        }
-    ]
-
-    response = client.chat.completions.create(
-        model=MODEL,
-        messages=messages,
-        tools=tools,
-        tool_choice="auto",
-        max_tokens=4096
-    )
-
-    response_message = response.choices[0].message
-    tool_calls = response_message.tool_calls
-
-    if tool_calls:
-        # Step 3: call the function
-        # Note: the JSON response may not always be valid; be sure to handle errors
-        available_functions = {
-            "get_transit_lines_from_operator": get_transit_lines_from_operator,
-            "get_departures": get_departures,
-            "get_traffic_alerts": get_traffic_alerts,
-            "get_transit_alerts_from_operator": get_transit_alerts_from_operator,
-        }
-        messages.append(response_message)  # extend conversation with assistant's reply
-
-        # Step 4: send the info for each function call and function response to the model
-        for tool_call in tool_calls:
-            function_name = tool_call.function.name
-            function_to_call = available_functions[function_name]
-            function_args = json.loads(tool_call.function.arguments)
-
-            if function_to_call == get_departures:
-                function_response = function_to_call(
-                    operator_id=function_args.get("operator_id"),
-                    station_id=function_args.get("station_id")
-                )
-            elif function_to_call == get_traffic_alerts:
-                function_response = function_to_call()
-            else:
-                function_response = function_to_call(
-                    operator_id=function_args.get("operator_id")
-                )
-
-            messages.append(
-                {
-                    "tool_call_id": tool_call.id,
-                    "role": "tool",
-                    "name": function_name,
-                    "content": " ".join(function_response) if function_response else "No results found",
-                }
-            )  # extend conversation with function response
-
-        second_response = client.chat.completions.create(
-            model=MODEL,
-            messages=messages
-        )  # get a new response from the model where it can see the function response
-        return second_response.choices[0].message.content
-    
-prompt = input("Enter a prompt: ")
-print(run_conversation(prompt))
